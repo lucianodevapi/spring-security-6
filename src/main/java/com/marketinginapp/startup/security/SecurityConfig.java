@@ -3,7 +3,9 @@ package com.marketinginapp.startup.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +27,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.sql.DataSource;
 import java.util.List;
 
+//@EnableWebSecurity
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -35,18 +39,26 @@ public class SecurityConfig {
         requestHeader.setCsrfRequestAttributeName("_csrf");
         return http
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/loans", "/balance", "/cards").authenticated()
+                        auth
+//                                .requestMatchers("/loan").hasAuthority("VIEW_LOANS")
+//                                .requestMatchers("/balance").hasAuthority("VIEW_BALANCE")
+//                                .requestMatchers("/card").hasAuthority("VIEW_CARDS")
+//                                .requestMatchers("/account").hasAnyAuthority("VIEW_ACCOUNT","VIEW_CARDS")
+
+                                .requestMatchers("/loan").hasRole("VIEW_LOANS")
+                                .requestMatchers("/balance").hasRole("VIEW_BALANCE")
+                                .requestMatchers("/card").hasRole("VIEW_CARDS")
+                                .requestMatchers("/account").hasAnyRole("VIEW_ACCOUNT","VIEW_CARDS")
+
                                 .anyRequest().permitAll())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
                 .cors(cors -> corsConfigurationSource())
                 .csrf(csrf -> csrf
                         .csrfTokenRequestHandler(requestHeader)
-                        .ignoringRequestMatchers("/loans","/cards")
+                        .ignoringRequestMatchers("/welcome","/about")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 ).addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class )
-//                .cors(AbstractHttpConfigurer::disable)
-//                .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
 

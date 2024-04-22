@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigInteger;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,6 +23,7 @@ public class CustomerEntity {
     private String email;
     @Column(name = "pwd", length = 500)
     private String password;
-    @Column(name = "rol", length = 20)
-    private String role;
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_customer")
+    private List<RoleEntity> roles;
 }
