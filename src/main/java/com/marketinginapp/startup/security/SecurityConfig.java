@@ -14,8 +14,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -23,14 +31,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        var requestHeader = new CsrfTokenRequestAttributeHandler();
+        requestHeader.setCsrfRequestAttributeName("_csrf");
         return http
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/loans", "/balance", "/cards").authenticated()
                                 .anyRequest().permitAll())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
-                .cors(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> corsConfigurationSource())
+                .csrf(csrf -> csrf
+                        .csrfTokenRequestHandler(requestHeader)
+                        .ignoringRequestMatchers("/loans","/cards")
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                ).addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class )
+//                .cors(AbstractHttpConfigurer::disable)
+//                .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
 
@@ -58,6 +74,26 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return NoOpPasswordEncoder.getInstance();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(){
+        var config = new CorsConfiguration();
+//        config.setAllowedOrigins(
+//                List.of(
+//                        "http://localhost:4200",
+//                        "http://my_app"
+//                )
+//        );
+        config.setAllowedOrigins(List.of("*"));
+
+//        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
+
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**",config);
+        return source;
     }
 //    @Bean
 //    PasswordEncoder passwordEncoder() {
