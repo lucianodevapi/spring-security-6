@@ -10,3 +10,4 @@
 
 * git checkout -b "01/basic_security" 
 * git checkout -b "03/password-encode"
+* git checkout -b "04/authentication-providers"

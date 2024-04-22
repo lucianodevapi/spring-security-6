@@ -12,22 +12,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
+//
+//@Transactional
+//@Service
+public class CustomerUserDetails
+       // implements UserDetailsService
+{
 
-@Transactional
-@Service
-public class CustomerUserDetails implements UserDetailsService {
-
-    private final CustomerRepository repository;
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repository
-                .findByEmail(username)
-                .map(customer -> {
-                    var authorities = List.of(new SimpleGrantedAuthority(customer.getRole()));
-                    return new User(customer.getEmail(), customer.getPassword(), authorities);
-                }).orElseThrow(() -> new UsernameNotFoundException(
-                        String.format("User not found by email: %s", username)));
-    }
+//    private final CustomerRepository repository;
+//
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        return repository
+//                .findByEmail(username)
+//                .map(customer -> {
+//                    var authorities = List.of(new SimpleGrantedAuthority(customer.getRole()));
+//                    return new User(customer.getEmail(), customer.getPassword(), authorities);
+//                }).orElseThrow(() -> new UsernameNotFoundException(
+//                        String.format("User not found by email: %s", username)));
+//    }
 }
