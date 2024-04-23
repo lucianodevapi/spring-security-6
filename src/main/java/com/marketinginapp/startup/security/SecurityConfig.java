@@ -27,8 +27,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.sql.DataSource;
 import java.util.List;
 
-//@EnableWebSecurity
-@EnableMethodSecurity
+@EnableWebSecurity(debug = true)
+//@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -37,7 +37,9 @@ public class SecurityConfig {
 
         var requestHeader = new CsrfTokenRequestAttributeHandler();
         requestHeader.setCsrfRequestAttributeName("_csrf");
+
         return http
+                .addFilterBefore(new ApiKeyFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth ->
                         auth
 //                                .requestMatchers("/loan").hasAuthority("VIEW_LOANS")
@@ -58,7 +60,8 @@ public class SecurityConfig {
                         .csrfTokenRequestHandler(requestHeader)
                         .ignoringRequestMatchers("/welcome","/about")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                ).addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class )
+                )
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class )
                 .build();
     }
 
