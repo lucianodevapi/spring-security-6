@@ -1,12 +1,17 @@
 package com.marketinginapp.startup.security;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,19 +32,25 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.sql.DataSource;
 import java.util.List;
 
-@EnableWebSecurity(debug = true)
+//@RequiredArgsConstructor
+
+//@EnableWebSecurity(debug = true)
 //@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
+    //private final JwtValidationFilter jwtValidationFilter;
+
+    @Autowired
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,JwtValidationFilter jwtValidationFilter) throws Exception {
 
         var requestHeader = new CsrfTokenRequestAttributeHandler();
         requestHeader.setCsrfRequestAttributeName("_csrf");
 
         return http
-                .addFilterBefore(new ApiKeyFilter(), BasicAuthenticationFilter.class)
+                //.addFilterBefore(new ApiKeyFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth ->
                         auth
 //                                .requestMatchers("/loan").hasAuthority("VIEW_LOANS")
@@ -53,12 +64,13 @@ public class SecurityConfig {
                                 .requestMatchers("/account").hasAnyRole("VIEW_ACCOUNT","VIEW_CARDS")
 
                                 .anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
                 .cors(cors -> corsConfigurationSource())
                 .csrf(csrf -> csrf
                         .csrfTokenRequestHandler(requestHeader)
-                        .ignoringRequestMatchers("/welcome","/about")
+                        .ignoringRequestMatchers("/welcome","/about","/auth/login")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 )
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class )
@@ -114,4 +126,9 @@ public class SecurityConfig {
 //    PasswordEncoder passwordEncoder() {
 //        return new BCryptPasswordEncoder();
 //    }
+
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 }

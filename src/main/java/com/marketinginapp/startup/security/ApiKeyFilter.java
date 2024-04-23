@@ -11,12 +11,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Optional;
 
-public class ApiKeyFilter extends OncePerRequestFilter {
+public class ApiKeyFilter
+//        extends OncePerRequestFilter
+{
 
     private static final String API_KEY = "myKey";
     private static final String API_KEY_HEADER = "api_key";
 
-    @Override
+//    @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,

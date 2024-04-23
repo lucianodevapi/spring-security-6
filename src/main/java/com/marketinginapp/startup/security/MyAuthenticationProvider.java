@@ -16,13 +16,16 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 
-@Component
-public class MyAuthenticationProvider implements AuthenticationProvider {
+//@Component
+public class MyAuthenticationProvider
+
+//        implements AuthenticationProvider
+{
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
+//    @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         final var username = authentication.getName();
         final var password = authentication.getCredentials().toString();
@@ -46,7 +49,7 @@ public class MyAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
-    @Override
+//    @Override
     public boolean supports(Class<?> authentication) {
         return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
     }
